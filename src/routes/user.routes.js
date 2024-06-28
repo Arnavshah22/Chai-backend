@@ -26,7 +26,7 @@ router.route("/register").post(
     router.route("/current-user").get(verifyJWT,getCurrentUser)
     router.route("update-account").patch(verifyJWT,updateAccount)
     router.route("/avatar").patch(verifyJWT,upload.single("avatar"),updateAvatar)
-    router.route("/cover-image").patch(verifyJWT,upload.single("/coverImage"),updateCoverImage)
+    router.route("/cover-image").patch(verifyJWT,upload.single("coverImage"),updateCoverImage)
     router.route("/c/:username").get(verifyJWT,getUserProfile)
     router.route("/history").get(verifyJWT,getWatchHistory)
     
