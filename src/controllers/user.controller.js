@@ -4,6 +4,7 @@ import { apiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefereshTokens = async(userId) =>{
     try {
@@ -18,9 +19,10 @@ const generateAccessAndRefereshTokens = async(userId) =>{
 
 
     } catch (error) {
-        throw new apiErrorpiError(500, "Something went wrong while generating referesh and access token")
+        throw new apiError(500, "Something went wrong while generating referesh and access token")
     }
 }
+
 
 const registerUser=asyncHandler(async(req,res)=>{
        //get user details from frontend
@@ -153,14 +155,14 @@ const loginUser = asyncHandler(async (req, res) =>{
 
 
 const logoutUser=asyncHandler(async(req,res)=>{
-        User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
            req.user._id,
            {
              $unset:{  //update 
                 refreshToken:1
              }
            } ,
-           
+
            {
             new:true,
            }
@@ -206,7 +208,7 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
       httpOnly:true,
       secure:true,
     }
-    const {accessToken,newRefreshToken}=await generateAccessAndRefreshToken(user._id)
+    const {accessToken,newRefreshToken}=await generateAccessAndRefereshTokens(user._id)
     return res.status(200)
     .cookie("accessToken",accessToken,options)
     .cookie("refreshToken",newRefreshToken,options)
@@ -251,7 +253,7 @@ const changeCurrentPassword=asyncHandler(async(req,res)=>{
 })
 
 const getCurrentUser=asyncHandler(async(req,res)=>{
-      return res.status(200).json(200,req.user,"Current User fetched SuccessFully")
+      return res.status(200).json(new apiResponse(200,req.user,"Current User fetched SuccessFully"))
 })
 
 const updateAccount=asyncHandler(async(req,res)=>{
@@ -260,7 +262,7 @@ const updateAccount=asyncHandler(async(req,res)=>{
         {
             throw new apiError(400,"All fields are required")
         }
-    const user=await  User.findByIdAndUpdate(
+    const user=await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -301,7 +303,7 @@ const updateAvatar=asyncHandler(async(req,res)=>{
         {new:true}
     ).select("-password")
     return res.status(200)
-    .json(new apiResponse(200,user,"Av atar Image Updated Successfully"))
+    .json(new apiResponse(200,user,"Avatar Image Updated Successfully"))
 })
 
 const updateCoverImage=asyncHandler(async(req,res)=>{ 
@@ -310,6 +312,12 @@ const updateCoverImage=asyncHandler(async(req,res)=>{
     if(!coverImageLocalPath){
         throw new apiError(400,"Cover Image file is Missing")
 
+    }
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    if (!coverImage.url) {
+        throw new apiError(400, "Error while uploading on avatar")
+        
     }
 
     const user=await User.findByIdAndUpdate(
@@ -324,7 +332,7 @@ const updateCoverImage=asyncHandler(async(req,res)=>{
     ).select("--password")
 
      return res.status(200)
-    json(new apiResponse(200,user,"Cover Image Updated Successfully"))
+    .json(new apiResponse(200,user,"Cover Image Updated Successfully"))
 
       
 })
@@ -332,7 +340,7 @@ const updateCoverImage=asyncHandler(async(req,res)=>{
 const getUserProfile=asyncHandler(async(req,res)=>{
     const {username}=req.params
 
-    if(!username){
+    if(!username?.trim()){
         throw new apiError(400,"Username does not exist")
 
     }

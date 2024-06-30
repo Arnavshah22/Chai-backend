@@ -19,10 +19,10 @@ const UserSchema=new mongoose.Schema({
         trim: true, 
     },
     fullName: {
-        type: String,
-        required: true,
-        trim: true, 
-        index: true
+            type: String,
+            required: true,
+            trim: true, 
+            index: true
     },
     avatar: {
         type: String, // cloudinary url
@@ -64,7 +64,7 @@ UserSchema.methods.isPasswordCorrect =async function(password){
 }
 
 UserSchema.methods.generateAccessToken=function(){
-    jwt.sign({
+    return jwt.sign({
         _id:this._id,
         email:this.email,
         username:this.username,
@@ -78,7 +78,7 @@ UserSchema.methods.generateAccessToken=function(){
 
 }
 UserSchema.methods.generateRefreshToken=function(){
-    jwt.sign({
+    return jwt.sign({
         _id:this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
