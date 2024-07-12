@@ -21,7 +21,7 @@ const VideoSchema=new mongoose.Schema({
         required:true,
       }
       ,
-      duration:{
+      duration:{  
         type:String,
         required:true,
 

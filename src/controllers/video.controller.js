@@ -37,7 +37,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 isPublished:false,
             }
         })
-    }
+    }   
 
     // If sortBy and sortType are provided, add a $sort stage
     let createField=[]
